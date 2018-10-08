@@ -1,8 +1,10 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from PyQt5 import uic
 from lib.YouViewerLayout import Ui_MainWindow
+from lib.AuthDialog import AuthDialog
 import re
 import datetime
 
@@ -15,7 +17,11 @@ class Main(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.initAuthLock()
+        self.initSignal() # 시그널 초기화
 
+        #로그인 관련 변수선언
+        self.user_id = None
+        self.user_pw = None
 # 기본 비활성화 설정
     def initAuthLock(self):
         self.previewButton.setEnabled(False)
@@ -39,6 +45,26 @@ class Main(QMainWindow, Ui_MainWindow):
 
     def showStatusMsg(self,msg):
         self.statusbar.showMessage(msg)
+
+    def initSignal(self):
+        self.loginButton.clicked.connect(self.authCheck)
+
+    @pyqtSlot()
+    def authCheck(self):
+        dlg = AuthDialog()
+        dlg.exec_()
+        self.user_id = dlg.user_id
+        self.user_pw = dlg.user_pw
+
+        #print('id: %s password: %s' %(self.user_id,self.user_pw))
+
+        if True:
+            self.initAuthActive()
+            self.loginButton.setText('로그인 완료')
+            self.loginButton.setEnabled(False)
+            self.urlTextEdit.setFocus(True)
+        else:
+            QMessageBox.about(self,'인증오류','아이디 혹은 비밀번호가 틀렸습니다')
 
 if __name__=='__main__':
     app = QApplication(sys.argv)
